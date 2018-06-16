@@ -1,11 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
+
+public class stateUpdateBarrier : BarrierSystem {}
 
 public class UpdateStateSystem : ComponentSystem {
 	struct Data{
@@ -17,6 +17,8 @@ public class UpdateStateSystem : ComponentSystem {
 
 	[Inject] Data _data;
 
+    [Inject] stateUpdateBarrier _stateUpdateBarrier;
+
 	[Unity.Burst.BurstCompile]
 	struct updateJob : IJobParallelFor{
 		[ReadOnly] public ComponentDataArray<Position> pos;
@@ -24,7 +26,10 @@ public class UpdateStateSystem : ComponentSystem {
 		public ComponentDataArray<Color> col;
 		[ReadOnly] public int halfHeight;
 		[ReadOnly] public int halfWidth, width;
+        //[ReadOnly] public EntityArray EA;
         //public int births, deaths, stables;
+        //[WriteOnly] public EntityCommandBuffer.Concurrent CB;
+        //[ReadOnly] public MeshInstanceRenderer MSIW, MSIB;
 
         int x, y, liveNeighbours, newI;
 		public void Execute(int i){
@@ -78,18 +83,28 @@ public class UpdateStateSystem : ComponentSystem {
             //    Debug.Log(liveNeighbours);
             //}
 				
-			if(col[i].Value == 1 && liveNeighbours == 3){
-				col[i] = new Color { Value = 0};
+			if(col[i].Value == 1 ){
+                if(liveNeighbours == 3)
+				    col[i] = new Color { Value = 0};
+                //CB.RemoveComponent<MeshInstanceRenderer>(EA[i]);
+                //CB.SetSharedComponent<MeshInstanceRenderer>(EA[i], MSIB);
                 //births++;
                 // msi[i] = MSIB;
             }
-			else if(col[i].Value != 1){
+			else{
                 if (liveNeighbours > 3) {
                     col[i] = new Color { Value = 1 };
+                    //CB.RemoveComponent<MeshInstanceRenderer>(EA[i]);
+                    //CB.SetSharedComponent<MeshInstanceRenderer>(EA[i], MSIW);
                     //deaths++;
                 }
-                else if (liveNeighbours < 2) {
-                    col[i] = new Color { Value = 0 };
+                //if(liveNeighbours > 1 && liveNeighbours <= 3) {
+                //    col[i] = new Color { Value = 0 };
+                //}
+                if (liveNeighbours < 2) {
+                    col[i] = new Color { Value = 1 };
+                    //CB.RemoveComponent<MeshInstanceRenderer>(EA[i]);
+                    //CB.SetSharedComponent<MeshInstanceRenderer>(EA[i], MSIB);
                     // births++;
                 }
 			}
@@ -134,6 +149,10 @@ public class UpdateStateSystem : ComponentSystem {
             halfHeight = Bootstrap.halfDistanceHeight,
             halfWidth = Bootstrap.halfDistanceWidth,
             width = Bootstrap.Settings.width,
+            //CB = _stateUpdateBarrier.CreateCommandBuffer(),
+            //MSIB = MSI,
+            //MSIW = MSIW,
+            //EA = _data.entity
 		};
 		JobHandle jobHandle = job.Schedule(Bootstrap.Board.Length, Bootstrap.Board.Length/SystemInfo.processorCount);
 
@@ -149,21 +168,21 @@ public class UpdateStateSystem : ComponentSystem {
         uBoard.Complete();
 
 
-        int changesTemp = 0;
+  //      int changesTemp = 0;
         
 		for(int i = 0; i < _data.col.Length; i++){
 			if(_data.msi[i].material.color.b != _data.col[i].Value){
-                changesTemp++;
-				
-				if(_data.msi[i].material.color.b == 1)
-					PostUpdateCommands.SetSharedComponent<MeshInstanceRenderer>(_data.entity[i], MSI);
+                //              changesTemp++;
+
+                if (_data.msi[i].material.color.b == 1)
+                    PostUpdateCommands.SetSharedComponent<MeshInstanceRenderer>(_data.entity[i], MSI);
 				else
 					PostUpdateCommands.SetSharedComponent<MeshInstanceRenderer>(_data.entity[i], MSIW);
 			}
 		}
         
-        changesTemp = 0;
-        //this.Enabled = false;
+        //changesTemp = 0;
+        
     }
 
     

@@ -57,7 +57,7 @@ public class CubeSpawnSystem : ComponentSystem {
 			 tempHalf= -halfDistanceHeight;
 			for (int k = 0; k < height; k++){
 				PostUpdateCommands.CreateEntity(Bootstrap.Cube);
-				PostUpdateCommands.SetComponent<Position>(new Position {Value = new float3(tempHalfW, 0, tempHalf)});
+				PostUpdateCommands.SetComponent<Position>(new Position {Value = new float3(tempHalf, 0, tempHalfW) });
 				PostUpdateCommands.SetComponent<Rotation>(new Rotation { Value = quaternion.identity});
 				if(Bootstrap.Board[(i * (width)) + k] == 1)
 					PostUpdateCommands.SetSharedComponent<MeshInstanceRenderer>(MSIW);
