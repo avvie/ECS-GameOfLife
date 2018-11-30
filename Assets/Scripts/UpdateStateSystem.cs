@@ -1,6 +1,7 @@
 ﻿using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Burst;
 using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
@@ -19,7 +20,7 @@ public class UpdateStateSystem : ComponentSystem {
 
     [Inject] stateUpdateBarrier _stateUpdateBarrier;
 
-	[Unity.Burst.BurstCompile]
+	[BurstCompile]
 	struct updateJob : IJobParallelFor{
 		[ReadOnly] public ComponentDataArray<Position> pos;
 		[ReadOnly] public NativeArray<int> Board;

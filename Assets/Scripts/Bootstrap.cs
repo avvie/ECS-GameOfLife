@@ -20,7 +20,7 @@ public class Bootstrap : MonoBehaviour{
 	public static void Initialize(){
 		entityManager = World.Active.GetOrCreateManager<EntityManager>();
 		Cube = entityManager.CreateArchetype(typeof(Position), typeof(MeshInstanceRenderer), 
-			typeof(TransformMatrix), typeof(Rotation), typeof(Color));
+            typeof(Rotation), typeof(Color));
 
 		CubeSpawner = entityManager.CreateArchetype(typeof(Spawner));
 		
